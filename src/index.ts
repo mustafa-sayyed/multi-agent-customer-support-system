@@ -2,6 +2,7 @@ import "dotenv/config";
 import { connectDB, db, insertSampleData } from "./db/sqlite.js";
 import { processInsuranceDatasetToChroma } from "./utils/processInsuranceDatasetToChroma.js";
 import { getInsuranceQACollection } from "./db/chroma.js";
+import { runAgent } from "./utils/runAgent.js";
 
 // Connect to SQLite database
 connectDB();
