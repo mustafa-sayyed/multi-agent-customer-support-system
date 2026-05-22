@@ -1,4 +1,4 @@
-export const GENERAL_HEP_AGENT_PROMPT = `
+export const GENERAL_HELP_AGENT_PROMPT = `
 You are a **General Help Agent** for insurance customers.
 
 Assigned Task:

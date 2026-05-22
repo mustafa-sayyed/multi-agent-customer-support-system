@@ -16,8 +16,3 @@ export const getInsuranceQACollection = async () => {
 	}
 	return insuranceQACollection;
 };
-
-
-
-
-

@@ -1,4 +1,4 @@
-export const FINAL_ANSER_AGENT_PROMPT = `
+export const FINAL_ANSWER_AGENT_PROMPT = `
 The user asked: "{user_query}"
     
 The specialist agent provided this detailed response:

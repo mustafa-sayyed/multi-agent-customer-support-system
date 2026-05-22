@@ -22,8 +22,9 @@ if (stmt.columns().length > 10) {
 // const collection = await getInsuranceQACollection();
 // collection.query({
 // 	queryTexts: ["What is the process to file a claim?"],
+// 	nResults: 3,
 // }).then((result) => {
-// 	console.log("ChromaDB Query Result:", result);
+// 	console.log("ChromaDB Query Result:", JSON.stringify(result, null, 2));
 // }).catch((error) => {
 // 	console.error("Error querying ChromaDB:", error);
 // });
