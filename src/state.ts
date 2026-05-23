@@ -1,7 +1,7 @@
 import { MessagesValue, StateSchema } from "@langchain/langgraph";
 import z from "zod";
 
-export const state = new StateSchema({
+export const insuranceState = new StateSchema({
 	messages: MessagesValue,
     conversationHistory: z.string().optional(),
     userInput: z.string().optional(),

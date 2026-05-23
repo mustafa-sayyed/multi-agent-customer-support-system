@@ -3,31 +3,40 @@ import { tool } from "langchain";
 import z from "zod";
 import { logger } from "../utils/logger.js";
 
-const baseQuestionSchema = z.object({
-	name: z
-		.string()
-		.describe(
-			"A unique name for this question, used for referencing the answer in later questions.",
-		),
-	question: z.string().describe("The question you want to ask the user."),
-});
-
-const inputQuestionSchema = baseQuestionSchema.extend({
-	type: z.literal("input"),
-});
-
-const selectQuestionSchema = baseQuestionSchema.extend({
-	type: z.literal("select"),
-	choices: z.array(z.string()).describe("The choices for the select question."),
-});
-
-const confirmQuestionSchema = baseQuestionSchema.extend({
-	type: z.literal("confirm"),
-});
-
 const askQuestionSchema = z.array(
-	z.union([inputQuestionSchema, selectQuestionSchema, confirmQuestionSchema]),
+	z.object({
+		name: z
+			.string()
+			.describe(
+				"A unique name for this question, used for referencing the answer in later questions.",
+			),
+		question: z.string().describe("The question you want to ask the user."),
+		type: z.enum(["input", "select", "confirm"]).describe("The question type."),
+		choices: z
+			.array(z.string())
+			.describe("The choices for the select question.")
+			.optional(),
+	}),
 );
+
+// .superRefine((questions, ctx) => {
+// 	questions.forEach((question, index) => {
+// 		if (question.type === "select" && !question.choices?.length) {
+// 			ctx.addIssue({
+// 				code: z.ZodIssueCode.custom,
+// 				message: "Select questions must include a non-empty choices array.",
+// 				path: [index, "choices"],
+// 			});
+// 		}
+// 		if (question.type !== "select" && question.choices?.length) {
+// 			ctx.addIssue({
+// 				code: z.ZodIssueCode.custom,
+// 				message: "Choices are only allowed for select questions.",
+// 				path: [index, "choices"],
+// 			});
+// 		}
+// 	});
+// });
 
 export type AskQuestionInput = z.infer<typeof askQuestionSchema>;
 
@@ -50,44 +59,48 @@ type PromptQuestion =
 	  };
 
 export const askQuestion = tool(
-	async (input: AskQuestionInput) => {
+	async ({ questions }) => {
 		try {
-			const prompts: PromptQuestion[] = input.map((question): PromptQuestion => {
-				switch (question.type) {
-					case "input":
-						return {
-							type: "input",
-							name: question.name,
-							message: question.question,
-						};
-					case "confirm":
-						return {
-							type: "confirm",
-							name: question.name,
-							message: question.question,
-						};
-					case "select":
-						return {
-							type: "select",
-							name: question.name,
-							message: question.question,
-							choices: question.choices,
-						};
-				}
-			});
-	
+			const prompts: PromptQuestion[] = questions.map(
+				(question): PromptQuestion => {
+					switch (question.type) {
+						case "input":
+							return {
+								type: "input",
+								name: question.name,
+								message: question.question,
+							};
+						case "confirm":
+							return {
+								type: "confirm",
+								name: question.name,
+								message: question.question,
+							};
+						case "select":
+							return {
+								type: "select",
+								name: question.name,
+								message: question.question,
+								choices: question.choices || [],
+							};
+					}
+				},
+			);
+
 			const res = await inquirer.prompt(prompts);
-	
+
 			return res;
 		} catch (error) {
 			logger.error("Error asking question:", error);
-			throw error;
+			return "An error occurred while asking the question.";
 		}
 	},
 	{
 		name: "askQuestion",
 		description:
 			"Ask a question to the user. Supported question types are input, select, and confirm. Input expects free text, select provides multiple choices, and confirm expects a yes/no answer.",
-		schema: askQuestionSchema,
+		schema: z.object({
+			questions: askQuestionSchema,
+		}),
 	},
 );

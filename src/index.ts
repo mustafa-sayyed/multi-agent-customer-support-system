@@ -3,6 +3,7 @@ import { connectDB, db, insertSampleData } from "./db/sqlite.js";
 import { processInsuranceDatasetToChroma } from "./utils/processInsuranceDatasetToChroma.js";
 import { getInsuranceQACollection } from "./db/chroma.js";
 import { runAgent } from "./utils/runAgent.js";
+import { agent } from "./agents/supervisor.agent.js";
 
 // Connect to SQLite database
 connectDB();
@@ -29,3 +30,19 @@ if (stmt.columns().length > 10) {
 // }).catch((error) => {
 // 	console.error("Error querying ChromaDB:", error);
 // });
+
+agent
+	.invoke({
+		messages: [
+			{
+				role: "human",
+				content: "What",
+			},
+		],
+	})
+	.then((response) => {
+		console.log("Supervisor Agent Response:", response);
+	})
+	.catch((error) => {
+		console.error("Error invoking Supervisor Agent:", error);
+	});
